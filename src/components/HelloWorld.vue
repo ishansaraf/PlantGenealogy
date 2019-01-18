@@ -1,18 +1,21 @@
 <template>
-  <svg v-bind:width="width" v-bind:height="height" :d="svg">
+
+  <svg :viewbox="viewbox" :width="width" :height="height" :d="svg" style="width: 100%; height: auto;">
     <g stroke="#000">
+      <rect v-for="n in nodes" :key="n.id" :x="n.x" :y="n.y" :height="n.height" :width="n.width" :fill="n.fill"><title>{{n.title}}</title></rect>
     </g>
     <g fill='none' stroke-opacity="0.50">
+      <!--TODO stroke color-->
+      <g v-for="l in links" :key="l.id" style="mix-blend-mode: multiply;"><path :d="l.d" :stroke="l.stroke" :stroke-width="l.strokewidth"></path><title>{{l.title}}</title></g>
     </g>
     <g style="font: 10px sans-serif;">
-       <text  v-for="node in nodes" v-bind:key="node.id" v-bind:x="node.x" v-bind:y="node.y" dy="0.35em" v-bind:text-anchor="node.textanchor">{{node.text}}</text>
+       <text v-for="t in texts" :key="t.id" :x="t.x" :y="t.y" dy="0.35em" :text-anchor="t.textanchor">{{t.text}}</text>
     </g>
   </svg>
 </template>
 <script>
-  //, sankeyLinkHorizontal
-import * as d3 from "d3";
-import { sankey } from 'd3-sankey'
+// import * as d3 from "d3";
+import { sankey, sankeyLinkHorizontal } from 'd3-sankey'
 export default {
   name: 'sankey',
   data() {
@@ -20,33 +23,36 @@ export default {
       svg: '',
       src: {    nodes: [
         { id: "A1", name:"A1"},
-        { id: "A2" , name:"A2"},
+        { id: "A2", name:"A2"},
         { id: "B1", name:"B1"}
     ],
     links: [
-        { source: "A1", target: "B1", value: 27 }
+        { source: "A1", target: "B1", value: 27 },
+        { source: "A1", target: "A2", value: 27 }
     ]},
-      width:'500',
-      height:'270',
+      width:'1200',
+      height:'600',
     };
   },
 
   computed: {
+    viewbox(){
+      return `0,0,${this.width},${this.height}`
+    },
     graph(){
 
         const mysankey = sankey()
                          .size([this.width, this.height])
                          .nodeId(d => d.id)
                          .nodeWidth(20)
-                         .nodePadding(10)
+                         .nodePadding(20)
         let mygraph = mysankey(this.src);
         console.log(mygraph)
         return mygraph;
     },
-      nodes() {
+      texts() {
         var that = this;
         if (this.graph){
-          //console.log(this.usable.nodes)
          return this.graph.nodes.map(function(d) {
             return {
               id: d.id,
@@ -59,7 +65,43 @@ export default {
             };
           });
     }
+    return null;
+  },
+  links(){
+    var link =sankeyLinkHorizontal();
 
+          // console.log(link)
+    //TODO pretty colors
+        if (this.graph){
+         return this.graph.links.map(function(d) {
+            return {
+              id: d.id,
+              d:link(d),
+              stroke: "#ff0000",//TODO
+              strokewidth: Math.max(1, d.width),
+              title: `${d.source.name} => ${d.target.name}`
+
+            };
+          });
+    }
+    return null
+
+  },
+      nodes() {
+        if (this.graph){
+         return this.graph.nodes.map(function(d) {
+            return {
+              id: d.id,
+              x: d.x0,
+              y: d.y0,
+              height: d.y1-d.y0,
+              width: d.x1-d.x0,
+              fill: "#ff0000",//TODO
+              title: `${d.name}\nTODO`
+
+            };
+          });
+    }
     return null;
 }
   },
@@ -119,16 +161,6 @@ export default {
   // link.append("title")
   //     .text(d => `${d.source.name} → ${d.target.name}\n${format(d.value)}`);
 
-  // this.svg.append("g")
-  //     .style("font", "10px sans-serif")
-  //   .selectAll("text")
-  //   .data(nodes)
-  //   .enter().append("text")
-  //     .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-  //     .attr("y", d => (d.y1 + d.y0) / 2)
-  //     .attr("dy", "0.35em")
-  //     .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-  //     .text(d => d.name);
    },
 }
 </script>
