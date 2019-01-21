@@ -3,7 +3,7 @@ import re
 import parse
 
 # Extracting URLs from Leafly sitemap using BeautifulSoup to parse
-soup = BeautifulSoup(open("./Data/Raw/LeaflySitemap.xml", "r"), "lxml-xml")
+soup = BeautifulSoup(open("./LeaflySitemap.xml", "r"), "lxml-xml")
 urls  = [a.text for a in (urls.find("loc") for urls in soup.find_all("url")) if a]
 
 # Extracting only strain URLs from the complete list
