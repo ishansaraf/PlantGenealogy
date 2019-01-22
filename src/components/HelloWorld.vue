@@ -24,11 +24,21 @@ export default {
       src: {    nodes: [
         { id: "A1", name:"A1"},
         { id: "A2", name:"A2"},
-        { id: "B1", name:"B1"}
+        { id: "A3", name:"A3"},
+        { id: "B1", name:"B1"},
+        { id: "B2", name:"B2"},
+        { id: "C1", name:"C1"},
+        { id: "C2", name:"C2"}
     ],
     links: [
-        { source: "A1", target: "B1", value: 27 },
-        { source: "A1", target: "A2", value: 27 }
+        { source: "A1", target: "B1", value: 20 },
+        { source: "A2", target: "B1", value: 20 },
+        { source: "A3", target: "B2", value: 20 },
+        { source: "A2", target: "B2", value: 20 },
+        { source: "B1", target: "C1", value: 20 },
+        { source: "B2", target: "C1", value: 20 },
+        { source: "B1", target: "C2", value: 20 },
+        { source: "A3", target: "C2", value: 20 }
     ]},
       width:'1200',
       height:'600',
@@ -45,9 +55,9 @@ export default {
                          .size([this.width, this.height])
                          .nodeId(d => d.id)
                          .nodeWidth(20)
-                         .nodePadding(20)
+                         .nodePadding(50)
         let mygraph = mysankey(this.src);
-        console.log(mygraph)
+        //console.log(mygraph)
         return mygraph;
     },
       texts() {

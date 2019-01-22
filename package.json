@@ -10,6 +10,8 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "d3": "^5.7.0",
+    "d3-sankey": "^0.7.1",
     "vue": "^2.5.21",
     "express": "^4.16.4",
     "serve-static": "^1.13.2"
