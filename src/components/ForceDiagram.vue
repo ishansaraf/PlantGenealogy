@@ -1,72 +1,74 @@
 <template>
   <div id="chart">
-    <h1>D3 is confusing</h1>
-    <h2>But here's a force layout graph</h2>
+    <h2>D3 is confusing - But here's a force layout graph</h2>
   </div>
 </template>
 
 <script>
 import * as d3 from 'd3';
-import miserables from '../../Data/miserables.json';
+import strains from '../../Data/strains_formatted.json';
 
 export default {
   name: 'ForceDiagram',
   props: {},
-  mounted: function() {
+  mounted() {
     // Has to be mounted as DOM elements are only available after mount
     this.createChart();
   },
   methods: {
     createChart() {
-      const width = 900;
-      const height = 600;
+      const width = 1800;
+      const height = 800;
 
       const svg = d3
         .select('#chart')
         .append('svg')
         .attr('width', width)
         .attr('height', height);
+      //  .call(d3.zoom()
+      //    .scaleExtent([1, 8])
+      //    .on('zoom', zoom));
+      // Based on https://bl.ocks.org/mbostock/3680957
 
       const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      const linkForce = d3.forceLink().id(d => d.id);
+      const repulseForce = d3.forceManyBody();
+      repulseForce.distanceMax(500);
+      repulseForce.strength(-50);
+      const centerForce = d3.forceCenter(width / 2, height / 2);
+      const radialForce = d3.forceRadial(600, width / 2, height / 2);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
         .forceSimulation()
-        .force(
-          'link',
-          d3.forceLink().id(function(d) {
-            return d.id;
-          }),
-        )
-        .force('charge', d3.forceManyBody())
-        .force('center', d3.forceCenter(width / 2, height / 2));
-
+        .force('link', linkForce)
+        .force('charge', repulseForce)
+        .force('center', centerForce)
+        .force('radial', radialForce);
       // create d3 objects with nodes, labels, and links
       const link = svg
         .append('g')
         .attr('class', 'links')
         .selectAll('line')
-        .data(miserables.links)
+        .data(strains.links)
         .enter()
-        .append('line')
-        .attr('stroke-width', function(d) {
-          return Math.sqrt(d.value);
-        });
+        .append('line');
+        // .attr('stroke-width', d => Math.sqrt(d.value));
 
       const node = svg
         .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
-        .data(miserables.nodes)
+        .data(strains.nodes)
         .enter()
         .append('g');
 
+      // eslint-disable-next-line
       const circles = node
         .append('circle')
         .attr('r', 10)
-        .attr('fill', function(d) {
-          return color(d.group);
-        })
+        .attr('fill', d => color(d.group))
         .call(
           d3
             .drag()
@@ -75,41 +77,33 @@ export default {
             .on('end', dragEnd),
         );
 
+      // eslint-disable-next-line
       const labels = node
         .append('text')
-        .text(function(d) {
-          return d.id;
-        })
+        .text(d => d.name)
         .attr('x', 6)
         .attr('y', 3);
 
-      node.append('title').text(function(d) {
-        return d.id;
-      });
+      node.append('title').text(d => d.id);
 
       // Activate node and link rendering on tick
-      forceSim.nodes(miserables.nodes).on('tick', tick);
-      forceSim.force('link').links(miserables.links);
+      forceSim.nodes(strains.nodes).on('tick', tick);
+      forceSim.force('link').links(strains.links);
+      // forceSim.alphaDecay(0.01);
+
+      // function zoom() {
+      //  svg.attr('transform', d3.event.transform);
+      // }
 
       // Provide updated positions for d3 render
       function tick() {
         link
-          .attr('x1', function(d) {
-            return d.source.x;
-          })
-          .attr('x2', function(d) {
-            return d.target.x;
-          })
-          .attr('y1', function(d) {
-            return d.source.y;
-          })
-          .attr('y2', function(d) {
-            return d.target.y;
-          });
+          .attr('x1', d => d.source.x)
+          .attr('x2', d => d.target.x)
+          .attr('y1', d => d.source.y)
+          .attr('y2', d => d.target.y);
 
-        node.attr('transform', function(d) {
-          return 'translate(' + d.x + ',' + d.y + ')';
-        });
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
       }
 
       // Handles alpha forces to deal with node select and drag
@@ -146,7 +140,7 @@ export default {
 
 .nodes circle {
   stroke: #fff;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
 }
 
 text {
