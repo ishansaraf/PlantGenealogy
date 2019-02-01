@@ -24,10 +24,10 @@ export default {
         .select('#chart')
         .append('svg')
         .attr('width', width)
-        .attr('height', height)
-        .call(d3.zoom()
-          .scaleExtent([1, 8])
-          .on('zoom', zoom));
+        .attr('height', height);
+      //  .call(d3.zoom()
+      //    .scaleExtent([1, 8])
+      //    .on('zoom', zoom));
       // Based on https://bl.ocks.org/mbostock/3680957
 
       const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -89,11 +89,11 @@ export default {
       // Activate node and link rendering on tick
       forceSim.nodes(strains.nodes).on('tick', tick);
       forceSim.force('link').links(strains.links);
-      forceSim.alphaDecay(0.01);
+      // forceSim.alphaDecay(0.01);
 
-      function zoom() {
-        svg.attr('transform', d3.event.transform);
-      }
+      // function zoom() {
+      //  svg.attr('transform', d3.event.transform);
+      // }
 
       // Provide updated positions for d3 render
       function tick() {
