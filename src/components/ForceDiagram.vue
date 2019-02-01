@@ -7,11 +7,12 @@
 
 <script>
 import * as d3 from 'd3';
-import strains from '../../Data/strains_formatted.json'
+import strains from '../../Data/strains_formatted.json';
+
 export default {
   name: 'ForceDiagram',
   props: {},
-  mounted: function() {
+  mounted() {
     // Has to be mounted as DOM elements are only available after mount
     this.createChart();
   },
@@ -33,9 +34,7 @@ export default {
         .forceSimulation()
         .force(
           'link',
-          d3.forceLink().id(function(d) {
-            return d.id;
-          }),
+          d3.forceLink().id(d => d.id),
         )
         .force('charge', d3.forceManyBody())
         .force('center', d3.forceCenter(width / 2, height / 2));
@@ -48,9 +47,7 @@ export default {
         .data(strains.links)
         .enter()
         .append('line')
-        .attr('stroke-width', function(d) {
-          return Math.sqrt(d.value);
-        });
+        .attr('stroke-width', d => Math.sqrt(d.value));
 
       const node = svg
         .append('g')
@@ -60,12 +57,11 @@ export default {
         .enter()
         .append('g');
 
+      // eslint-disable-next-line
       const circles = node
         .append('circle')
         .attr('r', 10)
-        .attr('fill', function(d) {
-          return color(d.group);
-        })
+        .attr('fill', d => color(d.group))
         .call(
           d3
             .drag()
@@ -74,17 +70,14 @@ export default {
             .on('end', dragEnd),
         );
 
+      // eslint-disable-next-line
       const labels = node
         .append('text')
-        .text(function(d) {
-          return d.name;
-        })
+        .text(d => d.name)
         .attr('x', 6)
         .attr('y', 3);
 
-      node.append('title').text(function(d) {
-        return d.id;
-      });
+      node.append('title').text(d => d.id);
 
       // Activate node and link rendering on tick
       forceSim.nodes(strains.nodes).on('tick', tick);
@@ -93,22 +86,12 @@ export default {
       // Provide updated positions for d3 render
       function tick() {
         link
-          .attr('x1', function(d) {
-            return d.source.x;
-          })
-          .attr('x2', function(d) {
-            return d.target.x;
-          })
-          .attr('y1', function(d) {
-            return d.source.y;
-          })
-          .attr('y2', function(d) {
-            return d.target.y;
-          });
+          .attr('x1', d => d.source.x)
+          .attr('x2', d => d.target.x)
+          .attr('y1', d => d.source.y)
+          .attr('y2', d => d.target.y);
 
-        node.attr('transform', function(d) {
-          return 'translate(' + d.x + ',' + d.y + ')';
-        });
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
       }
 
       // Handles alpha forces to deal with node select and drag
