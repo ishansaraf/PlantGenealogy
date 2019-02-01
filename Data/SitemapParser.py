@@ -12,9 +12,13 @@ regexExp = "https?:\/\/(www\.)?(leafly\.com)\/(hybrid|sativa|indica)\/+[^\/]+[-a
 regex = re.compile(regexExp)
 strain_URLs = list(filter(regex.search, urls))
 
+f = open('ids.csv', 'a')
+
 i = 0
 siz = len(strain_URLs)
 for url in strain_URLs:
-    parse.get_data(url)
-    print('\r' + str(100 * i / siz),end='')
+    #parse.get_data(url)
+    #print('\r' + str(100 * i / siz),end='')
+    data = url.split("/")
+    f.write(data[-2]+":"+data[-1]+"\n")
     i+=1
