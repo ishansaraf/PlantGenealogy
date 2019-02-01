@@ -1,7 +1,6 @@
 <template>
   <div id="chart">
-    <h1>D3 is confusing</h1>
-    <h2>But here's a force layout graph</h2>
+    <h2>D3 is confusing - But here's a force layout graph</h2>
   </div>
 </template>
 
@@ -18,27 +17,35 @@ export default {
   },
   methods: {
     createChart() {
-      const width = 900;
-      const height = 600;
+      const width = 1800;
+      const height = 800;
 
       const svg = d3
         .select('#chart')
         .append('svg')
         .attr('width', width)
-        .attr('height', height);
+        .attr('height', height)
+        .call(d3.zoom()
+          .scaleExtent([1, 8])
+          .on('zoom', zoom));
+      // Based on https://bl.ocks.org/mbostock/3680957
 
       const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      const linkForce = d3.forceLink().id(d => d.id);
+      const repulseForce = d3.forceManyBody();
+      repulseForce.distanceMax(500);
+      repulseForce.strength(-50);
+      const centerForce = d3.forceCenter(width / 2, height / 2);
+      const radialForce = d3.forceRadial(600, width / 2, height / 2);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
         .forceSimulation()
-        .force(
-          'link',
-          d3.forceLink().id(d => d.id),
-        )
-        .force('charge', d3.forceManyBody())
-        .force('center', d3.forceCenter(width / 2, height / 2));
-
+        .force('link', linkForce)
+        .force('charge', repulseForce)
+        .force('center', centerForce)
+        .force('radial', radialForce);
       // create d3 objects with nodes, labels, and links
       const link = svg
         .append('g')
@@ -46,8 +53,8 @@ export default {
         .selectAll('line')
         .data(strains.links)
         .enter()
-        .append('line')
-        .attr('stroke-width', d => Math.sqrt(d.value));
+        .append('line');
+        // .attr('stroke-width', d => Math.sqrt(d.value));
 
       const node = svg
         .append('g')
@@ -82,6 +89,11 @@ export default {
       // Activate node and link rendering on tick
       forceSim.nodes(strains.nodes).on('tick', tick);
       forceSim.force('link').links(strains.links);
+      forceSim.alphaDecay(0.01);
+
+      function zoom() {
+        svg.attr('transform', d3.event.transform);
+      }
 
       // Provide updated positions for d3 render
       function tick() {
@@ -128,7 +140,7 @@ export default {
 
 .nodes circle {
   stroke: #fff;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
 }
 
 text {
