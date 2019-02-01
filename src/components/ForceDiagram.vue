@@ -7,8 +7,7 @@
 
 <script>
 import * as d3 from 'd3';
-import miserables from '../../Data/miserables.json';
-
+import strains from '../../Data/strains_formatted.json'
 export default {
   name: 'ForceDiagram',
   props: {},
@@ -46,7 +45,7 @@ export default {
         .append('g')
         .attr('class', 'links')
         .selectAll('line')
-        .data(miserables.links)
+        .data(strains.links)
         .enter()
         .append('line')
         .attr('stroke-width', function(d) {
@@ -57,7 +56,7 @@ export default {
         .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
-        .data(miserables.nodes)
+        .data(strains.nodes)
         .enter()
         .append('g');
 
@@ -78,7 +77,7 @@ export default {
       const labels = node
         .append('text')
         .text(function(d) {
-          return d.id;
+          return d.name;
         })
         .attr('x', 6)
         .attr('y', 3);
@@ -88,8 +87,8 @@ export default {
       });
 
       // Activate node and link rendering on tick
-      forceSim.nodes(miserables.nodes).on('tick', tick);
-      forceSim.force('link').links(miserables.links);
+      forceSim.nodes(strains.nodes).on('tick', tick);
+      forceSim.force('link').links(strains.links);
 
       // Provide updated positions for d3 render
       function tick() {
