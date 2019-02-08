@@ -34,27 +34,47 @@ export default {
 
       const linkForce = d3.forceLink().id(d => d.id);
       const repulseForce = d3.forceManyBody();
-      repulseForce.distanceMax(100);
+      // repulseForce.distanceMax(500);
       repulseForce.strength(-50);
-      repulseForce.theta(1.5);
+      // repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
-      // const radialForce = d3.forceRadial(600, width / 2, height / 2);
+      const radialForce = d3.forceRadial(calculateRadius, width / 2, height / 2);
+      radialForce.strength(0.3);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
         .forceSimulation()
         .force('link', linkForce)
         .force('charge', repulseForce)
-        .force('center', centerForce);
-      //  .force('radial', radialForce);
+        .force('center', centerForce)
+        .force('radial', radialForce);
+
       // create d3 objects with nodes, labels, and links
+      // See http://bl.ocks.org/fancellu/2c782394602a93921faff74e594d1bb1 (open source)
+      svg.append('defs').append('marker')
+        .attr('id', 'arrowhead')
+        .attr('viewBox', '-0 -5 10 10')
+        .attr('refX', 13)
+        .attr('refY', 0)
+        .attr('orient', 'auto')
+        .attr('markerWidth', 13)
+        .attr('markerHeight', 13)
+        .attr('xoverflow', 'visible')
+        .append('svg:path')
+        .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+        .attr('fill', '#999')
+        .style('stroke', 'none');
+
+      // And perhaps http://bl.ocks.org/d3noob/5141278 to see another example (no license)
       const link = svg
         .append('g')
         .attr('class', 'links')
         .selectAll('line')
         .data(strains.links)
         .enter()
-        .append('line');
+        .append('line')
+        .attr('class', 'link')
+        .attr('marker-end', 'url(#arrowhead)');
         // .attr('stroke-width', d => Math.sqrt(d.value));
 
       const node = svg
@@ -91,6 +111,10 @@ export default {
       forceSim.nodes(strains.nodes).on('tick', tick);
       forceSim.force('link').links(strains.links);
       // forceSim.alphaDecay(0.01);
+
+      function calculateRadius(d) {
+        return d.hasparent ? 400 : 50;
+      }
 
       // function zoom() {
       //  svg.attr('transform', d3.event.transform);
