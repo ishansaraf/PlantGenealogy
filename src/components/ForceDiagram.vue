@@ -33,13 +33,14 @@ export default {
       const color = d3.scaleOrdinal(d3.schemeCategory10);
 
       const linkForce = d3.forceLink().id(d => d.id);
+      linkForce.distance(150);
       const repulseForce = d3.forceManyBody();
-      // repulseForce.distanceMax(500);
-      repulseForce.strength(-50);
+      repulseForce.distanceMax(200);
+      repulseForce.strength(-40);
       // repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
       const radialForce = d3.forceRadial(calculateRadius, width / 2, height / 2);
-      radialForce.strength(0.3);
+      radialForce.strength(1);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
@@ -113,7 +114,7 @@ export default {
       // forceSim.alphaDecay(0.01);
 
       function calculateRadius(d) {
-        return d.hasparent ? 400 : 50;
+        return 40 + d.depth * 150;
       }
 
       // function zoom() {

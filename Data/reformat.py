@@ -2,7 +2,7 @@
 import json
 import csv
 import argparse
-
+import networkx as nx
 def category(strain_id):
     categories = {"sativa":1,"hybrid":2,"indica":3}
     return categories[strain_id.split(':')[0]]
