@@ -34,18 +34,19 @@ export default {
 
       const linkForce = d3.forceLink().id(d => d.id);
       const repulseForce = d3.forceManyBody();
-      repulseForce.distanceMax(500);
+      repulseForce.distanceMax(100);
       repulseForce.strength(-50);
+      repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
-      const radialForce = d3.forceRadial(600, width / 2, height / 2);
+      // const radialForce = d3.forceRadial(600, width / 2, height / 2);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
         .forceSimulation()
         .force('link', linkForce)
         .force('charge', repulseForce)
-        .force('center', centerForce)
-        .force('radial', radialForce);
+        .force('center', centerForce);
+      //  .force('radial', radialForce);
       // create d3 objects with nodes, labels, and links
       const link = svg
         .append('g')
@@ -117,7 +118,7 @@ export default {
 
       function drag(d) {
         d.fx = d3.event.x;
-        d.fy = d.event.y;
+        d.fy = d3.event.y;
       }
 
       function dragEnd(d) {

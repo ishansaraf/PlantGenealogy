@@ -32,6 +32,7 @@ def reformat(input_filename, output_filename):
     with open(input_filename, 'r') as csvfile:
         nodes = []
         links = []
+        info = {}
 
         csvreader = csv.DictReader(csvfile)
         for row in csvreader:
@@ -54,14 +55,15 @@ def reformat(input_filename, output_filename):
                 links.append({ "source": parent, "target": strain_id, "value": distance(strain_id,parent) })
             row["parents"] = parent_list
             if len(parent_list) or strain_id in parent_ids:
-                nodes.append({"id": strain_id, "name": row["name"], "group": group,"data":row}) 
+                nodes.append({"id": strain_id, "name": row["name"], "group": group})
+                info[strain_id]=row
             else:
                 print("Strain %s has no parents or children, discarding record" % strain_id,)
         if len(missing_ids):
             print("Warning, the following ids are missing and were ignored:")
             print(missing_ids)
         with open(output_filename,'w') as outfile:
-            json.dump({"nodes":nodes, "links":links},outfile)
+            json.dump({"nodes":nodes, "links":links,"info":info},outfile)
 
 
 if __name__ == "__main__":
