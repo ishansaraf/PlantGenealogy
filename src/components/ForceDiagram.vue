@@ -1,6 +1,6 @@
 <template>
   <div id="chart">
-    <h2>D3 is confusing - But here's a force layout graph</h2>
+    <h1>D3 is confusing - But here's a force layout graph</h1>
   </div>
 </template>
 
@@ -17,7 +17,7 @@ export default {
   },
   methods: {
     createChart() {
-      const width = 1800;
+      const width = 1600;
       const height = 800;
 
       const svg = d3
@@ -25,23 +25,34 @@ export default {
         .append('svg')
         .attr('width', width)
         .attr('height', height);
-      //  .call(d3.zoom()
-      //    .scaleExtent([1, 8])
-      //    .on('zoom', zoom));
-      // Based on https://bl.ocks.org/mbostock/3680957
+
+
+      const g = svg.append('g')
+        .attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
+
 
       const color = d3.scaleOrdinal(d3.schemeCategory10);
+      const ringSeperation = 100;
+      const linkForce = d3.forceLink().id(d => d.strain_id);
 
-      const linkForce = d3.forceLink().id(d => d.id);
-      linkForce.distance(100);
+      function desiredDistance(d) {
+        return 1.5 * ringSeperation * d.distance;
+      }
+      linkForce.distance(desiredDistance);
+
       const repulseForce = d3.forceManyBody();
-      repulseForce.distanceMax(500);
-      repulseForce.strength(-200);
+      repulseForce.distanceMax(4 * ringSeperation);
+      repulseForce.strength(-50);
       // repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
-      const radialForce = d3.forceRadial(calculateRadius, width / 2, height); // height / 2
-      radialForce.strength(0.2);
-      const yForce = d3.forceY(height);
+      const radialForce = d3.forceRadial(calculateRadius, width / 2, height / 2);
+      radialForce.strength(0.3);
+
+      function calculatePos(d) {
+        return height - (1 + d.depth) * ringSeperation;
+      }
+      const yForce = d3.forceY(calculatePos);
+      yForce.strength(0.9);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
@@ -49,19 +60,19 @@ export default {
         .force('y', yForce)
         .force('link', linkForce)
         .force('charge', repulseForce)
-        .force('center', centerForce)
-        .force('radial', radialForce);
+        .force('center', centerForce);
+        // .force('radial', radialForce);
 
       // create d3 objects with nodes, labels, and links
       // See http://bl.ocks.org/fancellu/2c782394602a93921faff74e594d1bb1 (open source)
-      svg.append('defs').append('marker')
+      g.append('defs').append('marker')
         .attr('id', 'arrowhead')
         .attr('viewBox', '-0 -5 10 10')
-        .attr('refX', 13)
+        .attr('refX', 16)
         .attr('refY', 0)
         .attr('orient', 'auto')
-        .attr('markerWidth', 13)
-        .attr('markerHeight', 13)
+        .attr('markerWidth', 10)
+        .attr('markerHeight', 10)
         .attr('xoverflow', 'visible')
         .append('svg:path')
         .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
@@ -69,8 +80,7 @@ export default {
         .style('stroke', 'none');
 
       // And perhaps http://bl.ocks.org/d3noob/5141278 to see another example (no license)
-      const link = svg
-        .append('g')
+      const link = g.append('g')
         .attr('class', 'links')
         .selectAll('line')
         .data(strains.links)
@@ -78,10 +88,8 @@ export default {
         .append('line')
         .attr('class', 'link')
         .attr('marker-end', 'url(#arrowhead)');
-        // .attr('stroke-width', d => Math.sqrt(d.value));
 
-      const node = svg
-        .append('g')
+      const node = g.append('g')
         .attr('class', 'nodes')
         .selectAll('g')
         .data(strains.nodes)
@@ -91,7 +99,7 @@ export default {
       // eslint-disable-next-line
       const circles = node
         .append('circle')
-        .attr('r', 10)
+        .attr('r', 7)
         .attr('fill', d => color(d.group))
         .call(
           d3
@@ -101,27 +109,34 @@ export default {
             .on('end', dragEnd),
         );
 
-      // eslint-disable-next-line
-      const labels = node
-        .append('text')
-        .text(d => d.name)
-        .attr('x', 6)
-        .attr('y', 3);
 
-      node.append('title').text(d => d.id);
+      // eslint-disable-next-line
+      // const labels = node
+      //  .append('text')
+      //  .text(d => d.name)
+      //  .attr('x', 6)
+      //  .attr('y', 3);
+
+      node.append('title').text(d => d.name);
 
       // Activate node and link rendering on tick
       forceSim.nodes(strains.nodes).on('tick', tick);
       forceSim.force('link').links(strains.links);
       // forceSim.alphaDecay(0.01);
 
-      function calculateRadius(d) {
-        return 100 + d.depth * 100;
+      // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
+      // add zoom capabilities
+      const zoomHandler = d3.zoom()
+        .on('zoom', zoom);
+      zoomHandler(svg);
+
+      function zoom() {
+        g.attr('transform', d3.event.transform);
       }
 
-      // function zoom() {
-      //  svg.attr('transform', d3.event.transform);
-      // }
+      function calculateRadius(d) {
+        return 1000 - ((1 + d.depth) * ringSeperation);
+      }
 
       // Provide updated positions for d3 render
       function tick() {
