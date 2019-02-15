@@ -20,7 +20,7 @@ export default {
       const width = 1600;
       const height = 800;
       const circleRadius = 7;
-      // remember to update this waaaay before if you change it
+      // remember to update this waaaay below if you change it
       const circleBorder = 1;
 
       const svg = d3
@@ -103,7 +103,7 @@ export default {
       const circles = node
         .append('circle')
         .attr('r', circleRadius)
-        .attr('fill', d => color(d.group))
+        .attr('fill', d => color(d.cat_type))
         .call(
           d3
             .drag()
@@ -160,6 +160,13 @@ export default {
           selected = this;
           d3.select(selected).style('stroke', 'black');
         }
+        // TODO update card here
+        // Here's an example, just prints all the relevant data for you to dev console
+        // Don't ask me why this line is such a complicated mess, probably is a better way...
+        const strainId = d3.select(selected).data()[0].strain_id;
+        const strainInfo = strains.info[strainId];
+        // eslint-disable-next-line
+        console.log(strainInfo)
       }
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
