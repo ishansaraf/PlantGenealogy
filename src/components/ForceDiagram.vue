@@ -39,13 +39,13 @@ export default {
       const linkForce = d3.forceLink().id(d => d.strain_id);
       linkForce.strength(0.05);
       function desiredDistance(d) {
-        return 1.25 * ringSeperation * d.distance;
+        return 1.1 * ringSeperation * d.distance;
       }
       linkForce.distance(desiredDistance);
 
       const repulseForce = d3.forceManyBody();
       repulseForce.distanceMax(3 * ringSeperation);
-      repulseForce.strength(-50);
+      repulseForce.strength(-30);
       // repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
 
@@ -55,7 +55,7 @@ export default {
       const yForce = d3.forceY(calculatePos);
       yForce.strength(0.9);
 
-      const collideForce = d3.forceCollide(circleRadius + circleBorder);
+      const collideForce = d3.forceCollide(1.1 * circleRadius + circleBorder);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
@@ -155,7 +155,7 @@ export default {
         if (!selected) {
           selected = this;
           d3.select(selected).style('stroke', 'black');
-        } else if (selected === this) {
+        } else {
           d3.select(selected).style('stroke', '#fff');
           selected = this;
           d3.select(selected).style('stroke', 'black');
