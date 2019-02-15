@@ -34,22 +34,20 @@ export default {
       const color = d3.scaleOrdinal(d3.schemeCategory10);
       const ringSeperation = 100;
       const linkForce = d3.forceLink().id(d => d.strain_id);
-
+      linkForce.strength(0.05);
       function desiredDistance(d) {
-        return 1.5 * ringSeperation * d.distance;
+        return 1.25 * ringSeperation * d.distance;
       }
       linkForce.distance(desiredDistance);
 
       const repulseForce = d3.forceManyBody();
-      repulseForce.distanceMax(4 * ringSeperation);
+      repulseForce.distanceMax(3 * ringSeperation);
       repulseForce.strength(-50);
       // repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
-      const radialForce = d3.forceRadial(calculateRadius, width / 2, height / 2);
-      radialForce.strength(0.3);
 
       function calculatePos(d) {
-        return height - (1 + d.depth) * ringSeperation;
+        return (1 + d.depth) * ringSeperation;
       }
       const yForce = d3.forceY(calculatePos);
       yForce.strength(0.9);
@@ -61,7 +59,6 @@ export default {
         .force('link', linkForce)
         .force('charge', repulseForce)
         .force('center', centerForce);
-        // .force('radial', radialForce);
 
       // create d3 objects with nodes, labels, and links
       // See http://bl.ocks.org/fancellu/2c782394602a93921faff74e594d1bb1 (open source)
@@ -107,7 +104,8 @@ export default {
             .on('start', dragStart)
             .on('drag', drag)
             .on('end', dragEnd),
-        );
+        )
+        .on('click', doClick);
 
 
       // eslint-disable-next-line
@@ -134,10 +132,6 @@ export default {
         g.attr('transform', d3.event.transform);
       }
 
-      function calculateRadius(d) {
-        return 1000 - ((1 + d.depth) * ringSeperation);
-      }
-
       // Provide updated positions for d3 render
       function tick() {
         link
@@ -149,6 +143,18 @@ export default {
         node.attr('transform', d => `translate(${d.x},${d.y})`);
       }
 
+      // https://stackoverflow.com/a/30714153
+      let selected;
+      function doClick() {
+        if (!selected) {
+          selected = this;
+          d3.select(selected).style('stroke', 'black');
+        } else if (selected === this) {
+          d3.select(selected).style('stroke', '#fff');
+          selected = this;
+          d3.select(selected).style('stroke', 'black');
+        }
+      }
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
         if (!d3.event.active) {
