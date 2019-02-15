@@ -19,6 +19,9 @@ export default {
     createChart() {
       const width = 1600;
       const height = 800;
+      const circleRadius = 7;
+      // remember to update this waaaay before if you change it
+      const circleBorder = 1;
 
       const svg = d3
         .select('#chart')
@@ -52,12 +55,15 @@ export default {
       const yForce = d3.forceY(calculatePos);
       yForce.strength(0.9);
 
+      const collideForce = d3.forceCollide(circleRadius + circleBorder);
+
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
         .forceSimulation()
         .force('y', yForce)
         .force('link', linkForce)
         .force('charge', repulseForce)
+        .force('collide', collideForce)
         .force('center', centerForce);
 
       // create d3 objects with nodes, labels, and links
@@ -96,7 +102,7 @@ export default {
       // eslint-disable-next-line
       const circles = node
         .append('circle')
-        .attr('r', 7)
+        .attr('r', circleRadius)
         .attr('fill', d => color(d.group))
         .call(
           d3
