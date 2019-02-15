@@ -34,6 +34,7 @@ export default {
         .attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
 
 
+      // TODO proper scales for each case
       const color = d3.scaleOrdinal(d3.schemeCategory10);
       const ringSeperation = 100;
       const linkForce = d3.forceLink().id(d => d.strain_id);
@@ -64,6 +65,10 @@ export default {
         .force('link', linkForce)
         .force('charge', repulseForce)
         .force('collide', collideForce)
+        // TODO create some function forceCluster, e.g. 
+        // function forceCluster(alpha) { TODO }. Place function well below this for cleanliness
+        // Then, uncomment this line:
+        .force('cluster',forceCluster)
         .force('center', centerForce);
 
       // create d3 objects with nodes, labels, and links
