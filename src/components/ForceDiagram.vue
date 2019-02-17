@@ -65,10 +65,10 @@ export default {
         .force('link', linkForce)
         .force('charge', repulseForce)
         .force('collide', collideForce)
-        // TODO create some function forceCluster, e.g. 
+        // TODO create some function forceCluster, e.g.
         // function forceCluster(alpha) { TODO }. Place function well below this for cleanliness
         // Then, uncomment this line:
-        .force('cluster',forceCluster)
+        // .force('cluster', forceCluster)
         .force('center', centerForce);
 
       // create d3 objects with nodes, labels, and links
