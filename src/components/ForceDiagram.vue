@@ -25,9 +25,12 @@ export default {
 
       const svg = d3
         .select('#chart')
+        .append('div')
+        .classed('svg-container', true)
         .append('svg')
-        .attr('width', width)
-        .attr('height', height);
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox', `0 0 ${width} ${height}`)
+        .classed('svg-content-responsive', true);
 
       const g = svg.append('g').attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
 
@@ -211,5 +214,21 @@ export default {
 text {
   font-family: sans-serif;
   font-size: 10px;
+}
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
 }
 </style>
