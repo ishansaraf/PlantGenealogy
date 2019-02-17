@@ -19,6 +19,9 @@ export default {
     createChart() {
       const width = 1600;
       const height = 800;
+      const circleRadius = 7;
+      // remember to update this waaaay below if you change it
+      const circleBorder = 1;
 
       const svg = d3
         .select('#chart')
@@ -31,28 +34,29 @@ export default {
         .attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
 
 
+      // TODO proper scales for each case
       const color = d3.scaleOrdinal(d3.schemeCategory10);
       const ringSeperation = 100;
       const linkForce = d3.forceLink().id(d => d.strain_id);
-
+      linkForce.strength(0.05);
       function desiredDistance(d) {
-        return 1.5 * ringSeperation * d.distance;
+        return 1.1 * ringSeperation * d.distance;
       }
       linkForce.distance(desiredDistance);
 
       const repulseForce = d3.forceManyBody();
-      repulseForce.distanceMax(4 * ringSeperation);
-      repulseForce.strength(-50);
+      repulseForce.distanceMax(3 * ringSeperation);
+      repulseForce.strength(-30);
       // repulseForce.theta(1.5);
       const centerForce = d3.forceCenter(width / 2, height / 2);
-      const radialForce = d3.forceRadial(calculateRadius, width / 2, height / 2);
-      radialForce.strength(0.3);
 
       function calculatePos(d) {
-        return height - (1 + d.depth) * ringSeperation;
+        return (1 + d.depth) * ringSeperation;
       }
       const yForce = d3.forceY(calculatePos);
       yForce.strength(0.9);
+
+      const collideForce = d3.forceCollide(1.1 * circleRadius + circleBorder);
 
       // Create force layout and add link forces, center gravity, and repulsion force
       const forceSim = d3
@@ -60,8 +64,12 @@ export default {
         .force('y', yForce)
         .force('link', linkForce)
         .force('charge', repulseForce)
+        .force('collide', collideForce)
+        // TODO create some function forceCluster, e.g. 
+        // function forceCluster(alpha) { TODO }. Place function well below this for cleanliness
+        // Then, uncomment this line:
+        .force('cluster',forceCluster)
         .force('center', centerForce);
-        // .force('radial', radialForce);
 
       // create d3 objects with nodes, labels, and links
       // See http://bl.ocks.org/fancellu/2c782394602a93921faff74e594d1bb1 (open source)
@@ -99,15 +107,16 @@ export default {
       // eslint-disable-next-line
       const circles = node
         .append('circle')
-        .attr('r', 7)
-        .attr('fill', d => color(d.group))
+        .attr('r', circleRadius)
+        .attr('fill', d => color(d.cat_type))
         .call(
           d3
             .drag()
             .on('start', dragStart)
             .on('drag', drag)
             .on('end', dragEnd),
-        );
+        )
+        .on('click', doClick);
 
 
       // eslint-disable-next-line
@@ -134,10 +143,6 @@ export default {
         g.attr('transform', d3.event.transform);
       }
 
-      function calculateRadius(d) {
-        return 1000 - ((1 + d.depth) * ringSeperation);
-      }
-
       // Provide updated positions for d3 render
       function tick() {
         link
@@ -149,6 +154,25 @@ export default {
         node.attr('transform', d => `translate(${d.x},${d.y})`);
       }
 
+      // https://stackoverflow.com/a/30714153
+      let selected;
+      function doClick() {
+        if (!selected) {
+          selected = this;
+          d3.select(selected).style('stroke', 'black');
+        } else {
+          d3.select(selected).style('stroke', '#fff');
+          selected = this;
+          d3.select(selected).style('stroke', 'black');
+        }
+        // TODO update card here
+        // Here's an example, just prints all the relevant data for you to dev console
+        // Don't ask me why this line is such a complicated mess, probably is a better way...
+        const strainId = d3.select(selected).data()[0].strain_id;
+        const strainInfo = strains.info[strainId];
+        // eslint-disable-next-line
+        console.log(strainInfo)
+      }
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
         if (!d3.event.active) {
