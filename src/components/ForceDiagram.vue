@@ -130,18 +130,15 @@ export default {
           // Red, orange, yellow? Not great
           // const color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[4], d3.schemeSet1[5]]);
           d3.selectAll('circle').attr('fill', d => color(d.cat_type));
+        } else if (attrName === 'med') {
+          // Manual cases from hell
+        } else if (attrName === 'effect') {
+          // Manual cases from hell
+          console.log(d3.schemeCategory10);
+
+          const color = d3.scaleOrdinal(d3.schemeCategory10);
         } else {
-          const numCategories = strains.metadata.cat_valueCounts[`main_${attrName}`];
-          // eslint-disable-next-line
-          console.log("Number of categories: "+numCategories)
-          const scheme = d3.schemeCategory10;
-          // eslint-disable-next-line
-          console.log("Scheme:",scheme);
-
-          const color = d3.scaleOrdinal(scheme);
-          // eslint-disable-next-line
-          console.log(color(5));
-
+          const color = d3.scaleOrdinal(d3.schemeCategory10);
           d3.selectAll('circle').attr('fill', d => color(d[`cat_${attrName}`]));
         }
       }
