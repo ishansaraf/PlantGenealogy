@@ -29,10 +29,7 @@ export default {
         .attr('width', width)
         .attr('height', height);
 
-
-      const g = svg.append('g')
-        .attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
-
+      const g = svg.append('g').attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
 
       // TODO proper scales for each case
       const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -65,15 +62,16 @@ export default {
         .force('link', linkForce)
         .force('charge', repulseForce)
         .force('collide', collideForce)
-        // TODO create some function forceCluster, e.g. 
+        // TODO create some function forceCluster, e.g.
         // function forceCluster(alpha) { TODO }. Place function well below this for cleanliness
         // Then, uncomment this line:
-        .force('cluster',forceCluster)
+        // .force('cluster',forceCluster)
         .force('center', centerForce);
 
       // create d3 objects with nodes, labels, and links
       // See http://bl.ocks.org/fancellu/2c782394602a93921faff74e594d1bb1 (open source)
-      g.append('defs').append('marker')
+      g.append('defs')
+        .append('marker')
         .attr('id', 'arrowhead')
         .attr('viewBox', '-0 -5 10 10')
         .attr('refX', 16)
@@ -88,7 +86,8 @@ export default {
         .style('stroke', 'none');
 
       // And perhaps http://bl.ocks.org/d3noob/5141278 to see another example (no license)
-      const link = g.append('g')
+      const link = g
+        .append('g')
         .attr('class', 'links')
         .selectAll('line')
         .data(strains.links)
@@ -97,7 +96,8 @@ export default {
         .attr('class', 'link')
         .attr('marker-end', 'url(#arrowhead)');
 
-      const node = g.append('g')
+      const node = g
+        .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
         .data(strains.nodes)
@@ -118,7 +118,6 @@ export default {
         )
         .on('click', doClick);
 
-
       // eslint-disable-next-line
       // const labels = node
       //  .append('text')
@@ -135,8 +134,7 @@ export default {
 
       // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
       // add zoom capabilities
-      const zoomHandler = d3.zoom()
-        .on('zoom', zoom);
+      const zoomHandler = d3.zoom().on('zoom', zoom);
       zoomHandler(svg);
 
       function zoom() {
@@ -171,7 +169,7 @@ export default {
         const strainId = d3.select(selected).data()[0].strain_id;
         const strainInfo = strains.info[strainId];
         // eslint-disable-next-line
-        console.log(strainInfo)
+        console.log(strainInfo);
       }
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
