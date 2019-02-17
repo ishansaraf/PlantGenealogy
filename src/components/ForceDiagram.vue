@@ -25,14 +25,14 @@ export default {
 
       const svg = d3
         .select('#chart')
+        .append('div')
+        .classed('svg-container', true)
         .append('svg')
-        .attr('width', width)
-        .attr('height', height);
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox', `0 0 ${width} ${height}`)
+        .classed('svg-content-responsive', true);
 
-
-      const g = svg.append('g')
-        .attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
-
+      const g = svg.append('g').attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
 
       const ringSeperation = 100;
       const linkForce = d3.forceLink().id(d => d.strain_id);
@@ -71,7 +71,8 @@ export default {
 
       // create d3 objects with nodes, labels, and links
       // See http://bl.ocks.org/fancellu/2c782394602a93921faff74e594d1bb1 (open source)
-      g.append('defs').append('marker')
+      g.append('defs')
+        .append('marker')
         .attr('id', 'arrowhead')
         .attr('viewBox', '-0 -5 10 10')
         .attr('refX', 16)
@@ -86,7 +87,8 @@ export default {
         .style('stroke', 'none');
 
       // And perhaps http://bl.ocks.org/d3noob/5141278 to see another example (no license)
-      const link = g.append('g')
+      const link = g
+        .append('g')
         .attr('class', 'links')
         .selectAll('line')
         .data(strains.links)
@@ -95,7 +97,8 @@ export default {
         .attr('class', 'link')
         .attr('marker-end', 'url(#arrowhead)');
 
-      const node = g.append('g')
+      const node = g
+        .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
         .data(strains.nodes)
@@ -143,7 +146,6 @@ export default {
         }
       }
 
-
       // eslint-disable-next-line
       // const labels = node
       //  .append('text')
@@ -160,8 +162,7 @@ export default {
 
       // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
       // add zoom capabilities
-      const zoomHandler = d3.zoom()
-        .on('zoom', zoom);
+      const zoomHandler = d3.zoom().on('zoom', zoom);
       zoomHandler(svg);
 
       function zoom() {
@@ -196,7 +197,7 @@ export default {
         const strainId = d3.select(selected).data()[0].strain_id;
         const strainInfo = strains.info[strainId];
         // eslint-disable-next-line
-        console.log(strainInfo)
+        console.log(strainInfo);
       }
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
@@ -238,5 +239,21 @@ export default {
 text {
   font-family: sans-serif;
   font-size: 10px;
+}
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
 }
 </style>
