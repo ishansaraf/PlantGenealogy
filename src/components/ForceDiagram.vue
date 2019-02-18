@@ -45,7 +45,7 @@ export default {
   methods: {
     createChart() {
       const width = 1600;
-      const height = 800;
+      const height = 1200;
       const circleRadius = 7;
       // remember to update this waaaay below if you change it
       const circleBorder = 1;
@@ -203,25 +203,75 @@ export default {
 
       // https://stackoverflow.com/a/30714153
       let selected;
+      let selectedLinks;
+      const highlights = [];
+      const parents = [];
       const self = this;
       function doClick() {
         if (!selected) {
           selected = this;
           d3.select(selected).style('stroke', 'black');
+
+          const strainId = d3.select(selected).data()[0].strain_id;
+          // looking at links sprouting from a node
+          selectedLinks = d3.selectAll('.link').filter(d => {
+            return d.source.strain_id === strainId || d.target.strain_id === strainId;
+          });
+
+          highlights.push(selectedLinks);
+
+          // creating list of strains
+          for (let i = 0; i < selectedLinks.data().length; i += 1) {
+            if (!parents.includes(selectedLinks.data()[i].source.strain_id)) {
+              parents.push(selectedLinks.data()[i].source.strain_id);
+            } else if (!parents.includes(selectedLinks.data()[i].target.strain_id)) {
+              parents.push(selectedLinks.data()[i].target.strain_id);
+            } else {
+              i += 1;
+            }
+          }
+
+          highlights[0].style('stroke', 'red');
+          highlights[0].style('stroke-opacity', '5');
         } else {
           d3.select(selected).style('stroke', '#fff');
           selected = this;
           d3.select(selected).style('stroke', 'black');
+
+          highlights[0].style('stroke', '#999');
+          highlights.length = 0;
+          parents.length = 0;
+
+          const strainId = d3.select(selected).data()[0].strain_id;
+
+          selectedLinks = d3.selectAll('.link').filter(d => {
+            return d.source.strain_id === strainId || d.target.strain_id === strainId;
+          });
+
+          highlights.push(selectedLinks);
+
+          for (let i = 0; i < selectedLinks.data().length; i += 1) {
+            if (!parents.includes(selectedLinks.data()[i].source.strain_id)) {
+              parents.push(selectedLinks.data()[i].source.strain_id);
+            } else if (!parents.includes(selectedLinks.data()[i].target.strain_id)) {
+              parents.push(selectedLinks.data()[i].target.strain_id);
+            } else {
+              i += 1;
+            }
+          }
+
+          highlights[0].style('stroke', 'red');
+          highlights[0].style('stroke-opacity', '5');
         }
-        // TODO update card here
-        // Here's an example, just prints all the relevant data for you to dev console
-        // Don't ask me why this line is such a complicated mess, probably is a better way...
+
         const strainId = d3.select(selected).data()[0].strain_id;
         const strainInfo = strains.info[strainId];
+
         // eslint-disable-next-line
         console.log(JSON.stringify(strainInfo));
         self.current_node = strainInfo;
       }
+
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
         if (!d3.event.active) {
