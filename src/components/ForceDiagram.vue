@@ -1,6 +1,6 @@
 <template>
   <div id="chart">
-    <h1>D3 is confusing - But here's a force layout graph</h1>
+    <h1>Plant Genealogy Tree</h1>
     <label for="colorby"> Color By: </label>
     <select id="colorby" @change="colorStrains()" v-model="selected">
       <option value="type">Strain Type</option>
@@ -8,7 +8,7 @@
       <option value="neg">Biggest Negative</option>
       <option value="med">Strongest Medical Property</option>
     </select>
-    <node-info :node_info="current_node"></node-info>
+    <node-info :node_info="current_node" v-show="showCard"></node-info>
   </div>
 </template>
 
@@ -32,6 +32,11 @@ export default {
       selected: 'type',
       keyArea: null,
     };
+  },
+  computed: {
+    showCard() {
+      return this.current_node.name !== '';
+    },
   },
   mounted() {
     // Has to be mounted as DOM elements are only available after mount
@@ -214,7 +219,7 @@ export default {
         const strainId = d3.select(selected).data()[0].strain_id;
         const strainInfo = strains.info[strainId];
         // eslint-disable-next-line
-        console.log(strainInfo);
+        console.log(JSON.stringify(strainInfo));
         self.current_node = strainInfo;
       }
       // Handles alpha forces to deal with node select and drag

@@ -6,7 +6,18 @@
       </a>
     </h1>
     <p>{{ node_info.desc }}</p>
-    <!-- <ul><li for parent in parents></li></ul> -->
+    <h3>Parents:</h3>
+    <ul>
+      <!-- eslint-disable-next-line -->
+      <li v-for="parent in node_info.parents_readable">
+        {{ parent }}
+      </li>
+    </ul>
+    <div style="display: inline-block">
+      <h4 style="float: left">Main Effect: {{node_info.main_effect}}</h4>
+      <h4 style="float: right">Main Medicinal Use: {{node_info.main_med}}</h4>
+      <h4 style="float: left">Main Flavor: {{node_info.main_flavor}}</h4>
+    </div>
   </div>
 </template>
 
@@ -33,12 +44,7 @@ a {
   color: lawngreen;
 }
 
-.dot {
-  float: right;
-  height: 25px;
-  width: 25px;
-  background-color: orange;
-  display: inline-block;
-  border-radius: 50%;
+h4 {
+  padding-right: 30px;
 }
 </style>
