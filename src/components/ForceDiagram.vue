@@ -34,8 +34,6 @@ export default {
 
       const g = svg.append('g').attr('class', 'everything'); // See https://bl.ocks.org/puzzler10/4438752bb93f45dc5ad5214efaa12e4a;
 
-      // TODO proper scales for each case
-      const color = d3.scaleOrdinal(d3.schemeCategory10);
       const ringSeperation = 100;
       const linkForce = d3.forceLink().id(d => d.strain_id);
       linkForce.strength(0.05);
@@ -111,7 +109,6 @@ export default {
       const circles = node
         .append('circle')
         .attr('r', circleRadius)
-        .attr('fill', d => color(d.cat_type))
         .call(
           d3
             .drag()
@@ -120,6 +117,31 @@ export default {
             .on('end', dragEnd),
         )
         .on('click', doClick);
+
+      colorStrains('type');
+      function colorStrains(attrName) {
+        if (attrName === 'type') {
+          // Maybe a nice diverging color scheme:
+          // const color = d3.scaleOrdinal(d3.schemeBrBG[3])
+          // Red, purple, blue. Looks ok
+          const color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[3], d3.schemeSet1[1]]);
+          // Or, blue, green, yellow. Looks awful
+          // const color = d3.scaleOrdinal([d3.schemeSet1[1], d3.schemeSet1[2], d3.schemeSet1[5]]);
+          // Red, orange, yellow? Not great
+          // const color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[4], d3.schemeSet1[5]]);
+          d3.selectAll('circle').attr('fill', d => color(d.cat_type));
+        } else if (attrName === 'med') {
+          // Manual cases from hell
+        } else if (attrName === 'effect') {
+          // Manual cases from hell
+          console.log(d3.schemeCategory10);
+
+          const color = d3.scaleOrdinal(d3.schemeCategory10);
+        } else {
+          const color = d3.scaleOrdinal(d3.schemeCategory10);
+          d3.selectAll('circle').attr('fill', d => color(d[`cat_${attrName}`]));
+        }
+      }
 
       // eslint-disable-next-line
       // const labels = node
