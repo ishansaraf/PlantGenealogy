@@ -45,7 +45,7 @@ export default {
   methods: {
     createChart() {
       const width = 1600;
-      const height = 800;
+      const height = 1200;
       const circleRadius = 7;
       // remember to update this waaaay below if you change it
       const circleBorder = 1;
@@ -203,21 +203,83 @@ export default {
 
       // https://stackoverflow.com/a/30714153
       let selected;
+      let selected_links;
+      var highlights = new Array();
+      var parents = new Array();
+      var relative_nodes;
       const self = this;
       function doClick() {
         if (!selected) {
           selected = this;
+
+          const strainId = d3.select(selected).data()[0].strain_id;
+
+          // const strainInfo = strains.info[strainId];
           d3.select(selected).style('stroke', 'black');
+          //looking at links sprouting from a node
+          selected_links = d3.selectAll('.link').filter(function(d) {
+            return d.source.strain_id === strainId || d.target.strain_id === strainId;
+          });
+
+          highlights.push(selected_links);
+
+          //creating list of strains
+          for (let i = 0; i < selected_links.data().length; i++) {
+            if (!parents.includes(selected_links.data()[i].source.strain_id)) {
+              parents.push(selected_links.data()[i].source.strain_id);
+              //console.log("added src"+ selected_links.data()[i].source.strain_id)
+            } else if (!parents.includes(selected_links.data()[i].target.strain_id)) {
+              parents.push(selected_links.data()[i].target.strain_id);
+              //console.log("added tgt"+ selected_links.data()[i].target.strain_id)
+            } else {
+              i++;
+            }
+          }
+
+          //now making an object of selected nodes
+
+          relative_nodes = d3.selectAll('.node').filter(function(d) {
+            return parents.includes(d.source.strain_id) || parents.includes(d.target.strain_id);
+          });
+
+          relative_nodes.style('stroke', 'black');
+          highlights[0].style('stroke', 'red');
+          highlights[0].style('stroke-opacity', '5');
         } else {
           d3.select(selected).style('stroke', '#fff');
+          highlights[0].style('stroke', '#999');
+          highlights.length = 0;
+          parents.length = 0;
           selected = this;
+          const strainId = d3.select(selected).data()[0].strain_id;
+          selected_links = d3.selectAll('.link').filter(function(d) {
+            return d.source.strain_id === strainId || d.target.strain_id === strainId;
+          });
+          highlights.push(selected_links);
+          for (let i = 0; i < selected_links.data().length; i++) {
+            if (!parents.includes(selected_links.data()[i].source.strain_id)) {
+              parents.push(selected_links.data()[i].source.strain_id);
+            } else if (!parents.includes(selected_links.data()[i].target.strain_id)) {
+              parents.push(selected_links.data()[i].target.strain_id);
+            } else {
+              i++;
+            }
+          }
+
+          relative_nodes = d3.selectAll('.node').filter(function(d) {
+            return parents.includes(d.source.strain_id) || parents.includes(d.target.strain_id);
+          });
+
+          relative_nodes.style('stroke', 'black');
+          highlights[0].style('stroke', 'red');
+          highlights[0].style('stroke-opacity', '5');
+
           d3.select(selected).style('stroke', 'black');
         }
         // TODO update card here
         // Here's an example, just prints all the relevant data for you to dev console
         // Don't ask me why this line is such a complicated mess, probably is a better way...
-        const strainId = d3.select(selected).data()[0].strain_id;
-        const strainInfo = strains.info[strainId];
+
         // eslint-disable-next-line
         console.log(JSON.stringify(strainInfo));
         self.current_node = strainInfo;
