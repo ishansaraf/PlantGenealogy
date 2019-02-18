@@ -1,6 +1,13 @@
 <template>
   <div id="chart">
     <h1>D3 is confusing - But here's a force layout graph</h1>
+    <label for="colorby"> Color By: </label>
+    <select id="colorby" @change="colorStrains()" v-model="selected">
+    <option value="type">Strain Type</option>
+    <option value="effect">Strongest Effect</option>
+    <option value="neg">Biggest Negative</option>
+    <option value="med">Strongest Medical Property</option>
+  </select>
   </div>
 </template>
 
@@ -11,6 +18,12 @@ import strains from '../../Data/strains_formatted.json';
 export default {
   name: 'ForceDiagram',
   props: {},
+  data() {
+    return {
+      selected: 'type',
+      keyArea: null,
+    };
+  },
   mounted() {
     // Has to be mounted as DOM elements are only available after mount
     this.createChart();
@@ -86,8 +99,10 @@ export default {
         .attr('fill', '#999')
         .style('stroke', 'none');
 
+      const zoomArea = g.append('g');
+
       // And perhaps http://bl.ocks.org/d3noob/5141278 to see another example (no license)
-      const link = g
+      const link = zoomArea
         .append('g')
         .attr('class', 'links')
         .selectAll('line')
@@ -97,7 +112,7 @@ export default {
         .attr('class', 'link')
         .attr('marker-end', 'url(#arrowhead)');
 
-      const node = g
+      const node = zoomArea
         .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
@@ -118,30 +133,29 @@ export default {
         )
         .on('click', doClick);
 
-      colorStrains('type');
-      function colorStrains(attrName) {
-        if (attrName === 'type') {
-          // Maybe a nice diverging color scheme:
-          // const color = d3.scaleOrdinal(d3.schemeBrBG[3])
-          // Red, purple, blue. Looks ok
-          const color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[3], d3.schemeSet1[1]]);
-          // Or, blue, green, yellow. Looks awful
-          // const color = d3.scaleOrdinal([d3.schemeSet1[1], d3.schemeSet1[2], d3.schemeSet1[5]]);
-          // Red, orange, yellow? Not great
-          // const color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[4], d3.schemeSet1[5]]);
-          d3.selectAll('circle').attr('fill', d => color(d.cat_type));
-        } else if (attrName === 'med') {
-          // Manual cases from hell
-        } else if (attrName === 'effect') {
-          // Manual cases from hell
-          console.log(d3.schemeCategory10);
+      const keyGroup = g
+        .append('g')
+        .attr('class', 'key');
 
-          const color = d3.scaleOrdinal(d3.schemeCategory10);
-        } else {
-          const color = d3.scaleOrdinal(d3.schemeCategory10);
-          d3.selectAll('circle').attr('fill', d => color(d[`cat_${attrName}`]));
-        }
-      }
+      const key = keyGroup
+        .selectAll('g');
+      this.keyArea = key;
+
+      keyGroup.append('rect') // Nice rectangle around the key
+        .attr('class', 'keyBox')
+        .attr('width', 140)
+        .attr('height', 50)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('fill', '#ffffff')
+        .attr('stroke', '#000000');
+
+
+      // colorStrains('type');
+      // colorStrains('effect');
+      this.colorStrains('neg');
+      // colorStrains('med')
+
 
       // eslint-disable-next-line
       // const labels = node
@@ -149,6 +163,7 @@ export default {
       //  .text(d => d.name)
       //  .attr('x', 6)
       //  .attr('y', 3);
+
 
       node.append('title').text(d => d.name);
 
@@ -163,7 +178,7 @@ export default {
       zoomHandler(svg);
 
       function zoom() {
-        g.attr('transform', d3.event.transform);
+        zoomArea.attr('transform', d3.event.transform);
       }
 
       // Provide updated positions for d3 render
@@ -218,6 +233,96 @@ export default {
         }
       }
     },
+
+    colorStrains() {
+      const attrName = this.selected;
+      let color;
+      const values = [];
+      if (attrName === 'type') {
+        // Maybe a nice diverging color scheme:
+        // color = d3.scaleOrdinal(d3.schemeBrBG[3])
+        // Red, purple, blue. Looks ok
+        color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[3], d3.schemeSet1[1]]);
+        // Or, blue, green, yellow. Looks awful
+        // color = d3.scaleOrdinal([d3.schemeSet1[1], d3.schemeSet1[2], d3.schemeSet1[5]]);
+        // Red, orange, yellow? Not great
+        // color = d3.scaleOrdinal([d3.schemeSet1[0], d3.schemeSet1[4], d3.schemeSet1[5]]);
+        let i;
+        for (i = 0; i < 3; i += 1) {
+          values[i] = {
+            label: strains.metadata.cat_enums.type[i],
+            color: color.range()[i],
+            pos: i,
+          };
+        }
+      } else if (attrName === 'med') {
+        // Manual cases from hell
+        const unknown = d3.schemeCategory10[9];
+        color = d3.scaleOrdinal();
+        color.domain([0, 3, 4, 5, 10, 6, 12, 11, 1, 9, 7, 2]);
+        color.range(d3.schemeCategory10.concat([unknown, unknown, unknown]));
+        let i;
+        for (i = 0; i < 9; i += 1) {
+          values[i] = {
+            label: strains.metadata.cat_enums.med[color.domain()[i]],
+            color: color.range()[i],
+            pos: i,
+          };
+        }
+        values[9] = {
+          label: 'Other',
+          color: color.range()[9],
+          pos: 9,
+        };
+      } else if (attrName === 'effect') {
+        // Manual cases from hell
+        const unknown = d3.schemeCategory10[9];
+        color = d3.scaleOrdinal();
+        color.domain([9, 7, 0, 4, 13, 3, 5, 2, 10, 8, 1, 6, 11]);
+        color.range(d3.schemeCategory10.concat([unknown, unknown, unknown, unknown]));
+        let i;
+        for (i = 0; i < 9; i += 1) {
+          values[i] = {
+            label: strains.metadata.cat_enums.effect[color.domain()[i]],
+            color: color.range()[i],
+            pos: i,
+          };
+        }
+        values[9] = {
+          label: 'Other',
+          color: color.range()[9],
+          pos: 9,
+        };
+      } else {
+        color = d3.scaleOrdinal(d3.schemeCategory10);
+        let i;
+        for (i = 0; i < strains.metadata.cat_enums_len[attrName]; i += 1) {
+          values[i] = {
+            label: strains.metadata.cat_enums[attrName][i],
+            color: color.range()[i],
+            pos: i,
+          };
+        }
+      }
+      d3.selectAll('circle').attr('fill', d => color(d[`cat_${attrName}`]));
+      d3.selectAll('.keyRepr').remove();
+      const tmpGroups = this.keyArea.data(values)
+        .enter()
+        .append('g')
+        .attr('class', 'keyRepr');
+      tmpGroups.append('rect')
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('x', 10)
+        .attr('y', d => 30 * d.pos + 10)
+        .attr('fill', d => d.color);
+      tmpGroups.append('text')
+        .text(d => d.label)
+        .attr('x', 40)
+        .attr('y', d => 30 * d.pos + 25);
+      // Update Key rectangle
+      d3.selectAll('rect.keyBox').attr('height', 30 * values.length + 10);
+    },
   },
 };
 </script>
@@ -235,7 +340,7 @@ export default {
 
 text {
   font-family: sans-serif;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .svg-container {
