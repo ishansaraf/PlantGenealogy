@@ -273,13 +273,11 @@ export default {
           label: 'Other',
           color: color.range()[9],
           pos: 9,
-
         };
       } else if (attrName === 'effect') {
         // Manual cases from hell
         const unknown = d3.schemeCategory10[9];
-        // eslint-disable-next-line
-          color = d3.scaleOrdinal()
+        color = d3.scaleOrdinal();
         color.domain([9, 7, 0, 4, 13, 3, 5, 2, 10, 8, 1, 6, 11]);
         color.range(d3.schemeCategory10.concat([unknown, unknown, unknown, unknown]));
         let i;
@@ -294,7 +292,6 @@ export default {
           label: 'Other',
           color: color.range()[9],
           pos: 9,
-
         };
       } else {
         color = d3.scaleOrdinal(d3.schemeCategory10);
