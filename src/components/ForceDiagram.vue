@@ -1,28 +1,42 @@
 <template>
   <div id="chart">
-    <h1>D3 is confusing - But here's a force layout graph</h1>
+    <h1>Plant Genealogy Tree</h1>
     <label for="colorby"> Color By: </label>
     <select id="colorby" @change="colorStrains()" v-model="selected">
-    <option value="type">Strain Type</option>
-    <option value="effect">Strongest Effect</option>
-    <option value="neg">Biggest Negative</option>
-    <option value="med">Strongest Medical Property</option>
-  </select>
+      <option value="type">Strain Type</option>
+      <option value="effect">Strongest Effect</option>
+      <option value="neg">Biggest Negative</option>
+      <option value="med">Strongest Medical Property</option>
+    </select>
+    <node-info :node_info="current_node" v-show="showCard"></node-info>
   </div>
 </template>
 
 <script>
 import * as d3 from 'd3';
 import strains from '../../Data/strains_formatted.json';
+import NodeInfo from './NodeInfo.vue';
 
 export default {
   name: 'ForceDiagram',
   props: {},
+  components: {
+    'node-info': NodeInfo,
+  },
   data() {
     return {
+      current_node: {
+        name: '',
+        url: '',
+      },
       selected: 'type',
       keyArea: null,
     };
+  },
+  computed: {
+    showCard() {
+      return this.current_node.name !== '';
+    },
   },
   mounted() {
     // Has to be mounted as DOM elements are only available after mount
@@ -133,15 +147,13 @@ export default {
         )
         .on('click', doClick);
 
-      const keyGroup = g
-        .append('g')
-        .attr('class', 'key');
+      const keyGroup = g.append('g').attr('class', 'key');
 
-      const key = keyGroup
-        .selectAll('g');
+      const key = keyGroup.selectAll('g');
       this.keyArea = key;
 
-      keyGroup.append('rect') // Nice rectangle around the key
+      keyGroup
+        .append('rect') // Nice rectangle around the key
         .attr('class', 'keyBox')
         .attr('width', 140)
         .attr('height', 50)
@@ -150,12 +162,10 @@ export default {
         .attr('fill', '#ffffff')
         .attr('stroke', '#000000');
 
-
       // colorStrains('type');
       // colorStrains('effect');
       this.colorStrains('neg');
       // colorStrains('med')
-
 
       // eslint-disable-next-line
       // const labels = node
@@ -163,7 +173,6 @@ export default {
       //  .text(d => d.name)
       //  .attr('x', 6)
       //  .attr('y', 3);
-
 
       node.append('title').text(d => d.name);
 
@@ -194,6 +203,7 @@ export default {
 
       // https://stackoverflow.com/a/30714153
       let selected;
+      const self = this;
       function doClick() {
         if (!selected) {
           selected = this;
@@ -209,7 +219,8 @@ export default {
         const strainId = d3.select(selected).data()[0].strain_id;
         const strainInfo = strains.info[strainId];
         // eslint-disable-next-line
-        console.log(strainInfo);
+        console.log(JSON.stringify(strainInfo));
+        self.current_node = strainInfo;
       }
       // Handles alpha forces to deal with node select and drag
       function dragStart(d) {
@@ -306,17 +317,20 @@ export default {
       }
       d3.selectAll('circle').attr('fill', d => color(d[`cat_${attrName}`]));
       d3.selectAll('.keyRepr').remove();
-      const tmpGroups = this.keyArea.data(values)
+      const tmpGroups = this.keyArea
+        .data(values)
         .enter()
         .append('g')
         .attr('class', 'keyRepr');
-      tmpGroups.append('rect')
+      tmpGroups
+        .append('rect')
         .attr('width', 20)
         .attr('height', 20)
         .attr('x', 10)
         .attr('y', d => 30 * d.pos + 10)
         .attr('fill', d => d.color);
-      tmpGroups.append('text')
+      tmpGroups
+        .append('text')
         .text(d => d.label)
         .attr('x', 40)
         .attr('y', d => 30 * d.pos + 25);
